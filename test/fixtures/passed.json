@@ -1,0 +1,38 @@
+{
+  "success": true,
+  "startTime": 1700000000000,
+  "numTotalTests": 12,
+  "numPassedTests": 11,
+  "numFailedTests": 0,
+  "numPendingTests": 1,
+  "numTodoTests": 0,
+  "numTotalTestSuites": 2,
+  "testResults": [
+    {
+      "name": "/home/runner/work/repo/repo/force-app/main/default/lwc/contactList/__tests__/contactList.test.js",
+      "status": "passed",
+      "endTime": 1700000001200,
+      "assertionResults": [
+        {
+          "fullName": "c-contact-list renders the rows",
+          "title": "renders the rows",
+          "status": "passed",
+          "failureMessages": []
+        }
+      ]
+    },
+    {
+      "name": "/home/runner/work/repo/repo/force-app/main/default/lwc/orderTable/__tests__/orderTable.test.js",
+      "status": "passed",
+      "endTime": 1700000002400,
+      "assertionResults": [
+        {
+          "fullName": "c-order-table defers a load by one microtask",
+          "title": "defers a load by one microtask",
+          "status": "pending",
+          "failureMessages": []
+        }
+      ]
+    }
+  ]
+}

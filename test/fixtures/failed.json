@@ -1,0 +1,37 @@
+{
+  "success": false,
+  "startTime": 1700000000000,
+  "numTotalTests": 5,
+  "numPassedTests": 3,
+  "numFailedTests": 2,
+  "numPendingTests": 0,
+  "numTodoTests": 0,
+  "numTotalTestSuites": 1,
+  "testResults": [
+    {
+      "name": "/home/runner/work/repo/repo/force-app/main/default/lwc/contactList/__tests__/contactList.test.js",
+      "status": "failed",
+      "endTime": 1700000003000,
+      "assertionResults": [
+        {
+          "fullName": "c-contact-list opens nothing on arrival",
+          "title": "opens nothing on arrival",
+          "status": "failed",
+          "failureMessages": ["\u001b[31mexpected\u001b[39m null to be an element"]
+        },
+        {
+          "fullName": "c-contact-list keeps the filter after a refresh",
+          "title": "keeps the filter after a refresh",
+          "status": "failed",
+          "failureMessages": ["Exceeded timeout of 5000 ms"]
+        },
+        {
+          "fullName": "c-contact-list sends the selection",
+          "title": "sends the selection",
+          "status": "passed",
+          "failureMessages": []
+        }
+      ]
+    }
+  ]
+}
