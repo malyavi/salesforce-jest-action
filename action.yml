@@ -1,0 +1,161 @@
+name: Salesforce LWC Jest
+description: >-
+  Runs a Lightning Web Component Jest suite and reports it into a shared pull
+  request comment and the job summary.
+author: Malyavi
+
+branding:
+  icon: check-square
+  color: blue
+
+inputs:
+  run:
+    description: >-
+      Whether to run the suite. With this off the action only reports an
+      existing results file, which is the way in for a runner whose flags this
+      action does not predict.
+    required: false
+    default: 'true'
+  test-command:
+    description: The command that runs the suite, without its reporting flags.
+    required: false
+    default: npx sfdx-lwc-jest
+  args:
+    description: Extra arguments for the test command, for example `--skipApiVersionCheck`.
+    required: false
+    default: ''
+  separator:
+    description: >-
+      Whether to put `--` before the reporting flags. A wrapper such as
+      `sfdx-lwc-jest` needs it to pass them through to Jest; Jest called
+      directly does not.
+    required: false
+    default: 'true'
+  coverage:
+    description: Whether to collect coverage.
+    required: false
+    default: 'false'
+  results-file:
+    description: >-
+      Where the runner writes its JSON report, relative to the working
+      directory. The numbers in every report come from this file rather than
+      from scraping the console output.
+    required: false
+    default: jest-results.json
+  test-outcome:
+    description: >-
+      With `run: false`, the outcome of your own test step — the `outcome`
+      of the step that ran it — so a missing results file can be explained.
+    required: false
+    default: unknown
+  install:
+    description: Whether to install dependencies before running.
+    required: false
+    default: 'true'
+  install-command:
+    description: How to install them.
+    required: false
+    default: npm ci
+  fail-on-error:
+    description: >-
+      Whether a failing suite fails the run. Off reports without enforcing,
+      which is how a repository adopts the check.
+    required: false
+    default: 'true'
+  max-failures-listed:
+    description: Failed tests named in the comment before collapsing into a count.
+    required: false
+    default: '10'
+  label:
+    description: How the check is named in every message it writes.
+    required: false
+    default: LWC Jest
+  working-directory:
+    description: Directory to run in, for a repository whose project is not at its root.
+    required: false
+    default: '.'
+  comment:
+    description: Whether to write the shared pull request comment at all.
+    required: false
+    default: 'true'
+  comment-section:
+    description: Section of the shared comment this action owns.
+    required: false
+    default: jest
+  comment-tag:
+    description: >-
+      HTML comment identifying the shared status comment. Several actions
+      reporting into one comment must be given the same tag.
+    required: false
+    default: '<!-- malyavi-pr-status-comment -->'
+  comment-section-order:
+    description: >-
+      Fixed rendering order for the comment's sections, comma-separated. A
+      section not listed renders after the listed ones.
+    required: false
+    default: ''
+  pr-number:
+    description: Pull request to comment on. Read from the event payload when unset.
+    required: false
+    default: ''
+  github-token:
+    description: Token used to read and write the pull request comment.
+    required: false
+    default: ${{ github.token }}
+
+outputs:
+  outcome:
+    description: '`passed` or `failed`.'
+    value: ${{ steps.jest.outputs.outcome }}
+  tests-passed:
+    description: Tests that passed.
+    value: ${{ steps.jest.outputs.tests-passed }}
+  tests-failed:
+    description: Tests that failed.
+    value: ${{ steps.jest.outputs.tests-failed }}
+  tests-total:
+    description: Tests that ran.
+    value: ${{ steps.jest.outputs.tests-total }}
+  tests-skipped:
+    description: Tests skipped or marked todo.
+    value: ${{ steps.jest.outputs.tests-skipped }}
+  suites:
+    description: Suites the run covered.
+    value: ${{ steps.jest.outputs.suites }}
+  results-path:
+    description: Path to the JSON report, for a later step to upload.
+    value: ${{ steps.jest.outputs.results-path }}
+
+runs:
+  using: composite
+  steps:
+    - name: Run the Jest suite
+      id: jest
+      shell: bash
+      env:
+        # A composite action does not populate INPUT_* for its own run steps,
+        # so every input is mapped here and read through lib/inputs.mjs.
+        INPUT_RUN: ${{ inputs.run }}
+        INPUT_TEST_COMMAND: ${{ inputs.test-command }}
+        INPUT_ARGS: ${{ inputs.args }}
+        INPUT_SEPARATOR: ${{ inputs.separator }}
+        INPUT_COVERAGE: ${{ inputs.coverage }}
+        INPUT_RESULTS_FILE: ${{ inputs.results-file }}
+        INPUT_TEST_OUTCOME: ${{ inputs.test-outcome }}
+        INPUT_INSTALL: ${{ inputs.install }}
+        INPUT_INSTALL_COMMAND: ${{ inputs.install-command }}
+        INPUT_FAIL_ON_ERROR: ${{ inputs.fail-on-error }}
+        INPUT_MAX_FAILURES_LISTED: ${{ inputs.max-failures-listed }}
+        INPUT_LABEL: ${{ inputs.label }}
+        INPUT_WORKING_DIRECTORY: ${{ inputs.working-directory }}
+        INPUT_COMMENT: ${{ inputs.comment }}
+        INPUT_COMMENT_SECTION: ${{ inputs.comment-section }}
+        INPUT_COMMENT_TAG: ${{ inputs.comment-tag }}
+        INPUT_COMMENT_SECTION_ORDER: ${{ inputs.comment-section-order }}
+        INPUT_PR_NUMBER: ${{ inputs.pr-number }}
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+      # The script runs from the action's own checkout and is handed the
+      # caller's directory as an input rather than through the step's
+      # `working-directory`: it threads that directory into the install, the
+      # test command and the results path itself.
+      run: node "$GITHUB_ACTION_PATH/scripts/run-jest.mjs"

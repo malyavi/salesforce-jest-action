@@ -1,0 +1,17 @@
+{
+  "success": false,
+  "startTime": 1700000000000,
+  "numTotalTests": 0,
+  "numPassedTests": 0,
+  "numFailedTests": 0,
+  "numTotalTestSuites": 1,
+  "testResults": [
+    {
+      "name": "/home/runner/work/repo/repo/force-app/main/default/lwc/contactList/__tests__/contactList.test.js",
+      "status": "failed",
+      "endTime": 1700000000900,
+      "message": "Cannot find module 'c/contactCard' from 'contactList.js'",
+      "assertionResults": []
+    }
+  ]
+}

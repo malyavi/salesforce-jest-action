@@ -1,0 +1,131 @@
+name: PR Validation
+
+# `tests` asks whether the logic is right; `smoke` asks whether the action works.
+#
+# The smoke job runs the action against a real Jest suite — one passing test and
+# one failing one — rather than against a stand-in that writes a results file
+# directly. That is the only way to prove the pieces this action actually owns:
+# that the reporting flags reach the runner, that the results file lands where
+# the action looks for it, and that a red suite is reported rather than swallowed.
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pr-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tests:
+    name: Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 'lts/*'
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Check that action.yml parses
+        run: |
+          pip install --quiet --disable-pip-version-check pyyaml
+          python3 test/check-action-yaml.py
+
+  smoke:
+    name: Smoke test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 'lts/*'
+
+      # Jest itself, in a directory of its own, so the action is pointed at a
+      # project that has nothing to do with this repository's own tooling.
+      - name: Build the fixture project
+        run: |
+          mkdir -p "${{ runner.temp }}/project"
+          cp test/fixtures/project/sum.test.js "${{ runner.temp }}/project/"
+          cd "${{ runner.temp }}/project"
+          npm init --yes > /dev/null
+          npm install --no-audit --no-fund --silent jest
+
+      - name: Run the action against a real Jest suite
+        id: jest
+        uses: ./
+        with:
+          working-directory: ${{ runner.temp }}/project
+          test-command: npx jest
+          # Jest called directly reads a bare `--` as a path filter matching
+          # nothing; only a wrapper such as sfdx-lwc-jest needs one.
+          separator: 'false'
+          install: 'false'
+          comment: 'false'
+          label: Fixture suite
+          # The suite fails on purpose, so the assertion below is what decides
+          # this job rather than the action's own verdict.
+          fail-on-error: 'false'
+
+      - name: Check what the action reported
+        env:
+          OUTCOME: ${{ steps.jest.outputs.outcome }}
+          PASSED: ${{ steps.jest.outputs.tests-passed }}
+          FAILED: ${{ steps.jest.outputs.tests-failed }}
+          TOTAL: ${{ steps.jest.outputs.tests-total }}
+          RESULTS: ${{ steps.jest.outputs.results-path }}
+        run: |
+          echo "outcome=$OUTCOME passed=$PASSED failed=$FAILED total=$TOTAL results=$RESULTS"
+          fail() { echo "::error::$1"; exit 1; }
+          [ "$PASSED" = "1" ] || fail "Expected 1 passing test, got '$PASSED'."
+          [ "$FAILED" = "1" ] || fail "Expected 1 failing test, got '$FAILED'. The fixture suite has exactly one of each, so anything else means the results file was not the one this run produced."
+          [ "$TOTAL" = "2" ] || fail "Expected 2 tests, got '$TOTAL'."
+          [ "$OUTCOME" = "failed" ] || fail "A suite with a failing test must report 'failed', got '$OUTCOME'."
+          [ -f "$RESULTS" ] || fail "The action reported a results path that does not exist: $RESULTS"
+
+      # Armed, to prove a failing suite fails the step; `continue-on-error`
+      # keeps the job green while the step goes red, which is the assertion.
+      - name: Run it again with fail-on-error on
+        id: armed
+        uses: ./
+        continue-on-error: true
+        with:
+          working-directory: ${{ runner.temp }}/project
+          test-command: npx jest
+          separator: 'false'
+          install: 'false'
+          comment: 'false'
+
+      - name: Check that a failing suite fails the run
+        run: |
+          fail() { echo "::error::$1"; exit 1; }
+          [ "${{ steps.armed.outcome }}" = "failure" ] || fail "A failing suite must fail the step; it reported '${{ steps.armed.outcome }}'."
+
+      # The reporting-only path, which is how a caller whose runner takes flags
+      # this action does not predict still gets a report.
+      - name: Report a results file somebody else produced
+        id: reported
+        uses: ./
+        with:
+          run: 'false'
+          results-file: test/fixtures/passed.json
+          comment: 'false'
+          fail-on-error: 'false'
+
+      - name: Check the reporting-only path
+        run: |
+          fail() { echo "::error::$1"; exit 1; }
+          [ "${{ steps.reported.outputs.outcome }}" = "passed" ] || fail "Reporting a passing results file should be 'passed', got '${{ steps.reported.outputs.outcome }}'."
+          [ "${{ steps.reported.outputs.tests-passed }}" = "11" ] || fail "Expected the fixture's 11 passing tests, got '${{ steps.reported.outputs.tests-passed }}'."
