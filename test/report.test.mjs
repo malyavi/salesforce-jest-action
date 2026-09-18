@@ -1,4 +1,4 @@
-import {readFileSync}                                      from 'node:fs';
+import {readFileSync}                                       from 'node:fs';
 import {describe, it}                                       from 'node:test';
 import assert                                               from 'node:assert/strict';
 import {renderComment, renderMissingResults, renderSummary} from '../lib/report.mjs';

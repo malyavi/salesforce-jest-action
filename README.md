@@ -74,7 +74,7 @@ results file" alone is not.
 | `working-directory` | `.` | For a repository whose project is not at its root. |
 | `comment` | `true` | Whether to write the pull request comment at all. |
 | `comment-section` | `jest` | The section of the shared comment this action owns. |
-| `comment-tag` | `<!-- pr-status-comment -->` | Identifies the shared comment. Give every action reporting into one comment the same tag. |
+| `comment-tag` | `<!-- malyavi-pr-status-comment -->` | Identifies the shared comment. Give every action reporting into one comment the same tag. |
 | `comment-section-order` | — | Fixed rendering order for the sections, comma-separated. |
 | `pr-number` | from the event | The pull request to comment on. |
 | `github-token` | `github.token` | Used to read and write the comment. |

@@ -1,10 +1,10 @@
-import {commentConfig, updateCommentSection} from '../lib/comment.mjs';
-import {resolveConfig, testArgs}            from '../lib/config.mjs';
-import {error, setOutput, summary, warn}    from '../lib/core.mjs';
-import {runCommandLine}                     from '../lib/exec.mjs';
-import {failureMessage}                     from '../lib/inputs.mjs';
+import {commentConfig, updateCommentSection}                from '../lib/comment.mjs';
+import {resolveConfig, testArgs}                            from '../lib/config.mjs';
+import {error, setOutput, summary, warn}                    from '../lib/core.mjs';
+import {runCommandLine}                                     from '../lib/exec.mjs';
+import {failureMessage}                                     from '../lib/inputs.mjs';
 import {renderComment, renderMissingResults, renderSummary} from '../lib/report.mjs';
-import {readResults, summarize}             from '../lib/results.mjs';
+import {readResults, summarize}                             from '../lib/results.mjs';
 
 /**
  * Runs a Jest suite and reports it: as this job's verdict, as a section of the

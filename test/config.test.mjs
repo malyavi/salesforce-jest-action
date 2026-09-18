@@ -1,6 +1,6 @@
-import {afterEach, describe, it}    from 'node:test';
-import assert                        from 'node:assert/strict';
-import {resolveConfig, testArgs}     from '../lib/config.mjs';
+import {afterEach, describe, it} from 'node:test';
+import assert                    from 'node:assert/strict';
+import {resolveConfig, testArgs} from '../lib/config.mjs';
 
 /**
  * The inputs, and the one piece of argument assembly that is easy to get wrong.
